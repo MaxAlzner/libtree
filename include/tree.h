@@ -396,6 +396,9 @@ template <typename T> struct binaryiterator_t
 	
 };
 
+/// <summary>
+/// Contains methods and properties for a binary tree.
+/// </summary>
 template <typename T> class binarytree_t
 {
 public:
