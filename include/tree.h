@@ -347,7 +347,7 @@ public:
 	 * @param size The size of the buffer.
 	 * @return The number of items put in the buffer.
 	 */
-	inline int32_t nodes(binarynode_t<T>* buffer, const size_t size);
+	inline size_t nodes(binarynode_t<T>* buffer, const size_t size);
 	
 protected:
 	
@@ -488,10 +488,10 @@ template <typename T> inline void binarytree_t<T>::clear()
 	this->_root = 0;
 }
 
-template <typename T> inline int32_t binarytree_t<T>::nodes(binarynode_t<T>* buffer, const size_t size)
+template <typename T> inline size_t binarytree_t<T>::nodes(binarynode_t<T>* buffer, const size_t size)
 {
 	binarynode_t<T>* read = buffer;
-	int32_t count = 0;
+	size_t count = 0;
 	for (size_t i = 0; i < this->_registry.capacity(); i++)
 	{
 		const binarynode_t<T>* node = &(this->_registry[i]);
