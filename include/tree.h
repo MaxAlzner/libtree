@@ -12,12 +12,12 @@
 #define max(x, y) (x > y ? x : y)
 #endif
 
-/**
- * Gets the tree ring for the given index and stride.
- * @param index The index inside of the tree.
- * @param stride The number of child nodes for each parent.
- * @return The ring's index.
- */
+/// <summary>
+/// Gets the tree ring for the given index and stride.
+/// </summary>
+/// <param name="index">The index inside of the tree.</param>
+/// <param name="stride">The number of child nodes for each parent.</param>
+/// <returns>The ring's index.</returns>
 static uint32_t tree_ring_by_index(const uint32_t index, const uint32_t stride)
 {
 	float e = 0.0f;
@@ -30,12 +30,12 @@ static uint32_t tree_ring_by_index(const uint32_t index, const uint32_t stride)
 	return (uint32_t)e;
 }
 
-/**
- * Gets the size needed for the given number of rings and specified stride.
- * @param rings The number of rings that make up the tree.
- * @param stride The number of child nodes for each parent.
- * @return The number of elements that the tree can potentially hold.
- */
+/// <summary>
+/// Gets the size needed for the given number of rings and specified stride.
+/// </summary>
+/// <param name="rings The number of rings that make up the tree.</param>
+/// <param name="stride The number of child nodes for each parent.</param>
+/// <returns>The number of elements that the tree can potentially hold.</returns>
 static size_t tree_size(const uint32_t rings, const uint32_t stride)
 {
 	size_t size = 0;
@@ -47,9 +47,9 @@ static size_t tree_size(const uint32_t rings, const uint32_t stride)
 	return size;
 }
 
-/**
- * Contains methods and properties for allocating and indexing a tree buffer.
- */
+/// <summary>
+/// Contains methods and properties for allocating and indexing a tree buffer.
+/// </summary>
 template <typename T> class treealloc_t
 {
 public:
@@ -59,10 +59,8 @@ public:
 		_bytes(0),
 		_rings(0),
 		_stride(1) {}
-	/**
-	 * @param rings The number of rings that make up the tree.
-	 * @param stride The number of child nodes for each parent.
-	 */
+	/// <param name="rings">The number of rings that make up the tree.</param>
+	/// <param name="stride">The number of child nodes for each parent.</param>
 	inline treealloc_t(const uint32_t rings, const uint32_t stride) :
 		_buffer(0),
 		_bytes(0),
@@ -70,36 +68,36 @@ public:
 		_stride(max(stride, 1)) {}
 	inline ~treealloc_t() {}
 	
-	/**
-	 * Allocates creates or re-allocates a the tree buffer.
-	 * @param rings The number of rings that make up the tree.
-	 * @param stride The number of child nodes for each parent.
-	 */
+	/// <summary>
+	/// Allocates creates or re-allocates a the tree buffer.
+	/// </summary>
+	/// <param name="rings">The number of rings that make up the tree.</param>
+	/// <param name="stride">The number of child nodes for each parent.</param>
 	inline void alloc(const uint32_t rings, const uint32_t stride);
-	/**
-	 * Ensures that the tree buffer has atleast the specified number of rings and stride.
-	 * @param rings The number of rings that make up the tree.
-	 * @param stride The number of child nodes for each parent.
-	 */
+	/// <summary>
+	/// Ensures that the tree buffer has atleast the specified number of rings and stride.
+	/// </summary>
+	/// <param name="rings">The number of rings that make up the tree.</param>
+	/// <param name="stride">The number of child nodes for each parent.</param>
 	inline void ensure(const uint32_t rings, const uint32_t stride);
 	
-	/**
-	 * Frees the tree buffer.
-	 */
+	/// <summary>
+	/// Frees the tree buffer.
+	/// </summary>
 	inline void clear();
-	/**
-	 * Sets the entire tree buffer to null.
-	 */
+	/// <summary>
+	/// Sets the entire tree buffer to null.
+	/// </summary>
 	inline void zero();
 	
-	/**
-	 * Gets the total capacity of the tree buffer.
-	 */
+	/// <summary>
+	/// Gets the total capacity of the tree buffer.
+	/// </summary>
 	inline size_t capacity() const { return this->_bytes / sizeof(T); }
 	
-	/**
-	 * Indexes into the tree buffer for an element.
-	 */
+	/// <summary>
+	/// Indexes into the tree buffer for an element.
+	/// </summary>
 	inline T& operator[](const size_t index);
 	
 protected:
@@ -266,9 +264,9 @@ template <typename T> struct binarynode_t;
 template <typename T> struct binaryiterator_t;
 template <typename T> class binarytree_t;
 
-/**
- * Contains methods and properties for a node in a binary tree.
- */
+/// <summary>
+/// Contains methods and properties for a node in a binary tree.
+/// </summary>
 template <typename T> struct binarynode_t
 {
 	
@@ -277,12 +275,10 @@ template <typename T> struct binarynode_t
 		_ring(-1),
 		_branch(-1),
 		_data(0) {}
-	/**
-	 * @param tree Pointer to the node's tree.
-	 * @param ring The ring that the node exists in.
-	 * @param branch The index inside of the ring for the node.
-	 * @param data The data that the node holds.
-	 */
+	/// <param name="tree">Pointer to the node's tree.</param>
+	/// <param name="ring">The ring that the node exists in.</param>
+	/// <param name="branch">The index inside of the ring for the node.</param>
+	/// <param name="data">The data that the node holds.</param>
 	inline binarynode_t(const binarytree_t<T>& tree, const int32_t ring, const int32_t branch, const T& data) :
 		_left(tree._registry),
 		_right(tree._registry),
@@ -293,9 +289,9 @@ template <typename T> struct binarynode_t
 		_data(data) {}
 	inline ~binarynode_t() {}
 	
-	/**
-	 * Gets a values indicating whether the node is empty.
-	 */
+	/// <summary>
+	/// Gets a values indicating whether the node is empty.
+	/// </summary>
 	inline bool empty() const;
 	
 	inline size_t index() const;
@@ -310,90 +306,90 @@ template <typename T> struct binarynode_t
 	
 };
 
-/**
- * Contains methods and properties for iterating through a binary tree.
- */
+/// <summary>
+/// Contains methods and properties for iterating through a binary tree.
+/// </summary>
 template <typename T> struct binaryiterator_t
 {
 	
 	inline binaryiterator_t() {}
-	/**
-	 * @param node The current node for the iterator.
-	 */
+	/// <param name="node">The current node for the iterator.
 	inline binaryiterator_t(const treereference_t<binarynode_t<T> >& node) :
 		_node(node) {}
 	inline ~binaryiterator_t() {}
 	
-	/**
-	 * Iterate to the left child node.
-	 * @return A new iterator at the next position.
-	 */
+	/// <summary>
+	/// Iterate to the left child node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> left() const;
-	/**
-	 * Set the left child node with the given item, and then iterate to that node.
-	 * @param item The item to put in the new node.
-	 * @return A new iterator at the next position.
-	 */
+	/// <summary>
+	/// Set the left child node with the given item, and then iterate to that node.
+	/// </summary>
+	/// <param name="item">The item to put in the new node.</param>
+	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> left(const T& item);
-	/**
-	 * Iterate to the right child node.
-	 * @return A new iterator at the next position.
-	 */
+	/// <summary>
+	/// Iterate to the right child node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> right() const;
-	/**
-	 * Set the right child node with the given item, and then iterate to that node.
-	 * @param item The item to put in the new node.
-	 * @return A new iterator at the next position.
-	 */
+	/// <summary>
+	/// Set the right child node with the given item, and then iterate to that node.
+	/// </summary>
+	/// <param name="item">The item to put in the new node.</param>
+	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> right(const T& item);
 	
-	/**
-	 * Remove the node where the iterator is, and then iterate to the parent node.
-	 * @return A new iterator at the next position.
-	 */
+	/// <summary>
+	/// Remove the node where the iterator is, and then iterate to the parent node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> remove();
 	
-	/**
-	 * Gets a value indicating whether or not the node has a left child.
-	 */
+	/// <summary>
+	/// Gets a value indicating whether or not the node has a left child.
+	/// </summary>
 	inline bool has_left() const;
-	/**
-	 * Gets a value indicating whether or not the node has a right child.
-	 */
+	/// <summary>
+	/// Gets a value indicating whether or not the node has a right child.
+	/// </summary>
 	inline bool has_right() const;
-	/**
-	 * Gets a value indicating whether or not the node is at the root of the tree.
-	 */
+	/// <summary>
+	/// Gets a value indicating whether or not the node is at the root of the tree.
+	/// </summary>
 	inline bool root() const;
-	/**
-	 * Gets a value indicating whether or not the node has any children.
-	 */
+	/// <summary>
+	/// Gets a value indicating whether or not the node has any children.
+	/// </summary>
 	inline bool leaf() const;
 	
-	/**
-	 * Gets a value indicating whether or not the iterator has a node.
-	 */
+	/// <summary>
+	/// Gets a value indicating whether or not the iterator has a node.
+	/// </summary>
 	inline bool empty() const;
 	
-	/**
-	 * Iterate to the left child node.
-	 */
+	/// <summary>
+	/// Iterate to the left child node.
+	/// </summary>
 	inline binaryiterator_t<T>& operator++();
-	/**
-	 * Iterate to the right child node.
-	 */
+	/// <summary>
+	/// Iterate to the right child node.
+	/// </summary>
 	inline binaryiterator_t<T>& operator--();
-	/**
-	 * Gets the held item for the current node.
-	 */
+	/// <summary>
+	/// Gets the held item for the current node.
+	/// </summary>
 	inline T& operator*() const;
-	/**
-	 * Determines whether this iterator is at the same location than the other iterator.
-	 */
+	/// <summary>
+	/// Determines whether this iterator is at the same location than the other iterator.
+	/// </summary>
+	/// <param name="other">An instance of binaryiterator_t.</param>
 	inline bool operator==(const binaryiterator_t<T>& other) const;
-	/**
-	 * Determines whether this iterator is not at the same location than the other iterator.
-	 */
+	/// <summary>
+	/// Determines whether this iterator is not at the same location than the other iterator.
+	/// </summary>
+	/// <param name="other">An instance of binaryiterator_t.</param>
 	inline bool operator!=(const binaryiterator_t<T>& other) const;
 	
 	treereference_t<binarynode_t<T> > _node;
@@ -411,39 +407,37 @@ public:
 	
 	inline binarytree_t() :
 		_registry(3, 2) {}
-	/**
-	 * @param rings The number of rings that make up the tree.
-	 */
+	/// <param name="rings">The number of rings that make up the tree.</param>
 	inline binarytree_t(const uint32_t rings) :
 		_registry(rings, 2) {}
 	inline ~binarytree_t() { this->clear(); }
 	
-	/**
-	 * Sets the root of the tree with the given item.
-	 * @return An iterator pointing at the root of the tree.
-	 */
+	/// <summary>
+	/// Sets the root of the tree with the given item.
+	/// </summary>
+	/// <returns>An iterator pointing at the root of the tree.</returns>
 	inline iterator set_root(const T& item);
 	
-	/**
-	 * Gets an iterator pointing at the root of the tree.
-	 */
+	/// <summary>
+	/// Gets an iterator pointing at the root of the tree.
+	/// </summary>
 	inline iterator root() { return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0)); }
-	/**
-	 * Gets an invalid iterator that does not have a node.
-	 */
+	/// <summary>
+	/// Gets an invalid iterator that does not have a node.
+	/// </summary>
 	inline iterator end() const { return iterator(); }
 	
-	/**
-	 * Clears all nodes from the tree.
-	 */
+	/// <summary>
+	/// Clears all nodes from the tree.
+	/// </summary>
 	inline void clear();
 	
-	/**
-	 * Fills a buffer with all nodes in the tree.
-	 * @param buffer A buffer of nodes.
-	 * @param size The size of the buffer.
-	 * @return The number of items put in the buffer.
-	 */
+	/// <summary>
+	/// Fills a buffer with all nodes in the tree.
+	/// </summary>
+	/// <param name="buffer">A buffer of nodes.</param>
+	/// <param name="size">The size of the buffer.</param>
+	/// <returns>The number of items put in the buffer.</returns>
 	inline size_t nodes(binarynode_t<T>* buffer, const size_t size);
 	
 protected:
