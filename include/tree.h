@@ -18,7 +18,7 @@
  * @param stride The number of child nodes for each parent.
  * @return The ring's index.
  */
-static uint32_t tree_index_in_ring(const uint32_t index, const uint32_t stride)
+static uint32_t tree_ring_by_index(const uint32_t index, const uint32_t stride)
 {
 	float e = 0.0f;
 	uint32_t last = 0;
@@ -111,6 +111,62 @@ protected:
 	
 };
 
+/// <summary>
+/// Contains methods and properties for refrencing an element in a treealloc_t instance.
+/// </summary>
+template <typename T> class treereference_t
+{
+public:
+	
+	inline treereference_t() :
+		_index(-1),
+		_registry(0) {}
+	/// <param name="registry">An instance of treealloc_t to reference.</param>
+	inline treereference_t(const treealloc_t<T>& registry) :
+		_index(-1),
+		_registry((treealloc_t<T>*)&registry) {}
+	/// <param name="registry">An instance of treealloc_t to reference.</param>
+	/// <param name="index">The index to reference.</param>
+	inline treereference_t(const treealloc_t<T>& registry, const uint32_t index) :
+		_index(index),
+		_registry((treealloc_t<T>*)&registry) {}
+	inline ~treereference_t() {}
+	
+	/// <summary>
+	/// Gets a value indicating whether or not the reference is empty.
+	/// </summary>
+	inline bool empty() const;
+	
+	/// <summary>
+	/// Sets the reference to the specified index.
+	/// </summary>
+	/// <param name="index">An index to reference.</param>
+	inline treereference_t<T>& operator=(const int32_t index);
+	/// <summary>
+	/// Sets this instance to be equal to that instance.
+	/// </summary>
+	/// <param name="other">An instance of treereference_t.</param>
+	inline treereference_t<T>& operator=(const treereference_t<T>& other);
+	/// <summary>
+	/// Accesses the referenced element.
+	/// </summary>
+	inline T& operator*() const;
+	/// <summary>
+	/// Accesses a member from the referenced element.
+	/// </summary>
+	inline T* operator->() const;
+	/// <summary>
+	/// Converts this instance into a point to the referenced element.
+	/// </summary>
+	inline operator T*() const;
+	
+protected:
+	
+	int32_t _index;
+	treealloc_t<T>* _registry;
+	
+};
+
 template <typename T> inline void treealloc_t<T>::alloc(const uint32_t rings, const uint32_t stride)
 {
 	size_t size = tree_size(rings, stride);
@@ -159,9 +215,51 @@ template <typename T> inline void treealloc_t<T>::zero()
 
 template <typename T> inline T& treealloc_t<T>::operator[](const size_t index)
 {
-	uint32_t ring = tree_index_in_ring(index, this->_stride);
+	uint32_t ring = tree_ring_by_index(index, this->_stride);
 	this->ensure(ring + 1, this->_stride);
 	return *(this->_buffer + index);
+}
+
+template <typename T> inline bool treereference_t<T>::empty() const
+{
+	return this->_registry == 0 || this->_index < 0;
+}
+
+template <typename T> inline treereference_t<T>& treereference_t<T>::operator=(const int32_t index)
+{
+	this->_index = index;
+	return *this;
+}
+template <typename T> inline treereference_t<T>& treereference_t<T>::operator=(const treereference_t<T>& other)
+{
+	this->_index = other._index;
+	this->_registry = other._registry;
+	return *this;
+}
+template <typename T> inline T& treereference_t<T>::operator*() const
+{
+	// if (this->_registry != 0 && this->_index >= 0)
+	// {
+		return (*(this->_registry))[this->_index];
+	// }
+}
+template <typename T> inline T* treereference_t<T>::operator->() const
+{
+	if (this->_registry != 0 && this->_index >= 0)
+	{
+		return &((*(this->_registry))[this->_index]);
+	}
+	
+	return 0;
+}
+template <typename T> inline treereference_t<T>::operator T*() const
+{
+	if (this->_registry != 0 && this->_index >= 0)
+	{
+		return &((*(this->_registry))[this->_index]);
+	}
+	
+	return 0;
 }
 
 template <typename T> struct binarynode_t;
@@ -175,9 +273,6 @@ template <typename T> struct binarynode_t
 {
 	
 	inline binarynode_t() :
-		_left(0),
-		_right(0),
-		_up(0),
 		_tree(0),
 		_ring(-1),
 		_branch(-1),
@@ -188,11 +283,11 @@ template <typename T> struct binarynode_t
 	 * @param branch The index inside of the ring for the node.
 	 * @param data The data that the node holds.
 	 */
-	inline binarynode_t(binarytree_t<T>* tree, const int32_t ring, const int32_t branch, const T& data) :
-		_left(0),
-		_right(0),
-		_up(0),
-		_tree(tree),
+	inline binarynode_t(const binarytree_t<T>& tree, const int32_t ring, const int32_t branch, const T& data) :
+		_left(tree._registry),
+		_right(tree._registry),
+		_up(tree._registry),
+		_tree((binarytree_t<T>*)&tree),
 		_ring(ring),
 		_branch(branch),
 		_data(data) {}
@@ -203,9 +298,11 @@ template <typename T> struct binarynode_t
 	 */
 	inline bool empty() const;
 	
-	binarynode_t<T>* _left;
-	binarynode_t<T>* _right;
-	binarynode_t<T>* _up;
+	inline size_t index() const;
+	
+	treereference_t<binarynode_t<T> > _left;
+	treereference_t<binarynode_t<T> > _right;
+	treereference_t<binarynode_t<T> > _up;
 	binarytree_t<T>* _tree;
 	int32_t _ring;
 	int32_t _branch;
@@ -219,11 +316,12 @@ template <typename T> struct binarynode_t
 template <typename T> struct binaryiterator_t
 {
 	
-	inline binaryiterator_t() : _node(0) {}
+	inline binaryiterator_t() {}
 	/**
 	 * @param node The current node for the iterator.
 	 */
-	inline binaryiterator_t(const binarynode_t<T>& node) : _node((binarynode_t<T>*)&node) {}
+	inline binaryiterator_t(const treereference_t<binarynode_t<T> >& node) :
+		_node(node) {}
 	inline ~binaryiterator_t() {}
 	
 	/**
@@ -298,7 +396,7 @@ template <typename T> struct binaryiterator_t
 	 */
 	inline bool operator!=(const binaryiterator_t<T>& other) const;
 	
-	binarynode_t<T>* _node;
+	treereference_t<binarynode_t<T> > _node;
 	
 };
 
@@ -308,17 +406,16 @@ public:
 	
 	typedef binaryiterator_t<T> iterator;
 	
+	friend struct binarynode_t<T>;
 	friend struct binaryiterator_t<T>;
 	
 	inline binarytree_t() :
-		_registry(3, 2),
-		_root(0) {}
+		_registry(3, 2) {}
 	/**
 	 * @param rings The number of rings that make up the tree.
 	 */
 	inline binarytree_t(const uint32_t rings) :
-		_registry(rings, 2),
-		_root(0) {}
+		_registry(rings, 2) {}
 	inline ~binarytree_t() { this->clear(); }
 	
 	/**
@@ -330,7 +427,7 @@ public:
 	/**
 	 * Gets an iterator pointing at the root of the tree.
 	 */
-	inline iterator root() const { return iterator(*(this->_root)); }
+	inline iterator root() { return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0)); }
 	/**
 	 * Gets an invalid iterator that does not have a node.
 	 */
@@ -352,18 +449,22 @@ public:
 protected:
 	
 	treealloc_t<binarynode_t<T> > _registry;
-	binarynode_t<T>* _root;
 	
 };
 
 template <typename T> inline bool binarynode_t<T>::empty() const
 {
-	return this->_data == 0 || this->_tree == 0 || this->_ring < 0 || this->_branch < 0;
+	return this->_data == 0 || this->_tree == 0 || this->_ring < 0 || this->_branch < 0 || this->_up.empty();
+}
+
+template <typename T> inline size_t binarynode_t<T>::index() const
+{
+	return (size_t)((((uint32_t)pow(2.0f, (float)this->_ring)) - 1) + this->_branch);
 }
 
 template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::left() const
 {
-	return this->_node != 0 && this->_node->_left != 0 ? binaryiterator_t<T>(*(this->_node->_left)) : binaryiterator_t<T>();
+	return this->_node != 0 && this->_node->_left != 0 ? binaryiterator_t<T>(this->_node->_left) : binaryiterator_t<T>();
 }
 template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::left(const T& item)
 {
@@ -372,17 +473,17 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::left(const
 		int32_t ring = this->_node->_ring + 1;
 		int32_t branch = (this->_node->_branch * 2) + 1;
 		int32_t index = (((int32_t)pow(2.0f, (float)ring)) - 1) + branch;
-		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(this->_node->_tree, ring, branch, item));
+		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(*(this->_node->_tree), ring, branch, item));
 		node._up = this->_node;
-		this->_node->_left = &node;
-		return binaryiterator_t<T>(node);
+		this->_node->_left = treereference_t<binarynode_t<T> >(this->_node->_tree->_registry, index);
+		return binaryiterator_t<T>(this->_node->_left);
 	}
 	
 	return binaryiterator_t<T>();
 }
 template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::right() const
 {
-	return this->_node != 0 && this->_node->_right != 0 ? binaryiterator_t<T>(*(this->_node->_right)) : binaryiterator_t<T>();
+	return this->_node != 0 && this->_node->_right != 0 ? binaryiterator_t<T>(this->_node->_right) : binaryiterator_t<T>();
 }
 template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::right(const T& item)
 {
@@ -391,10 +492,10 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::right(cons
 		int32_t ring = this->_node->_ring + 1;
 		int32_t branch = this->_node->_branch * 2;
 		int32_t index = (((int32_t)pow(2.0f, (float)ring)) - 1) + branch;
-		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(this->_node->_tree, ring, branch, item));
+		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(*(this->_node->_tree), ring, branch, item));
 		node._up = this->_node;
-		this->_node->_right = &node;
-		return binaryiterator_t<T>(node);
+		this->_node->_right = treereference_t<binarynode_t<T> >(this->_node->_tree->_registry, index);
+		return binaryiterator_t<T>(this->_node->_right);
 	}
 	
 	return binaryiterator_t<T>();
@@ -404,18 +505,18 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::remove()
 {
 	if (this->_node != 0)
 	{
-		binarynode_t<T>* prev = this->_node;
+		treereference_t<binarynode_t<T> > prev = this->_node;
 		if (prev->_up != 0)
 		{
-			if (prev->_up->_left == prev) { prev->_up->_left = 0; }
-			else if (prev->_up->_right == prev) { prev->_up->_right = 0; }
+			if (prev->_up->_left == prev) { prev->_up->_left = -1; }
+			else if (prev->_up->_right == prev) { prev->_up->_right = -1; }
 		}
 		
 		this->_node = prev->_up;
 		*prev = binarynode_t<T>();
 		if (this->_node != 0)
 		{
-			return binaryiterator_t<T>(*(this->_node));
+			return binaryiterator_t<T>(this->_node);
 		}
 	}
 	
@@ -478,14 +579,13 @@ template <typename T> inline bool binaryiterator_t<T>::operator!=(const binaryit
 template <typename T> inline binaryiterator_t<T> binarytree_t<T>::set_root(const T& item)
 {
 	this->_registry.zero();
-	this->_root = &(this->_registry[0] = binarynode_t<T>(this, 0, 0, item));
-	return iterator(*(this->_root));
+	this->_registry[0] = binarynode_t<T>(*this, 0, 0, item);
+	return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0));
 }
 
 template <typename T> inline void binarytree_t<T>::clear()
 {
 	this->_registry.clear();
-	this->_root = 0;
 }
 
 template <typename T> inline size_t binarytree_t<T>::nodes(binarynode_t<T>* buffer, const size_t size)

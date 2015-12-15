@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 	
 	printf("\n");
 	
-	printf("  removing node\n");
+	printf("  removing node (1, 0)\n");
 	i.remove();
 	
 	printf("\n");
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 	
 	printf("\n");
 	
-	printf("  removing node\n");
+	printf("  removing node (0, 0)\n");
 	bt0.root().remove();
 	
 	printf("\n");
