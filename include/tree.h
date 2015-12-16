@@ -177,6 +177,8 @@ protected:
 	
 };
 
+#include "treealloc.inl"
+
 template <typename T> struct binarynode_t;
 template <typename T> struct binaryiterator_t;
 template <typename T> class binarytree_t;
@@ -190,8 +192,7 @@ template <typename T> struct binarynode_t
 	inline binarynode_t() :
 		_tree(0),
 		_ring(-1),
-		_branch(-1),
-		_data(0) {}
+		_branch(-1) {}
 	/// <param name="tree">Pointer to the node's tree.</param>
 	/// <param name="ring">The ring that the node exists in.</param>
 	/// <param name="branch">The index inside of the ring for the node.</param>
@@ -211,6 +212,9 @@ template <typename T> struct binarynode_t
 	/// </summary>
 	inline bool empty() const;
 	
+	/// <summary>
+	/// Gets the index inside of the tree the node.
+	/// </summary>
 	inline size_t index() const;
 	
 	treereference_t<binarynode_t<T> > _left;
@@ -230,7 +234,7 @@ template <typename T> struct binaryiterator_t
 {
 	
 	inline binaryiterator_t() {}
-	/// <param name="node">The current node for the iterator.
+	/// <param name="node">The current node for the iterator.</param>
 	inline binaryiterator_t(const treereference_t<binarynode_t<T> >& node) :
 		_node(node) {}
 	inline ~binaryiterator_t() {}
@@ -257,6 +261,11 @@ template <typename T> struct binaryiterator_t
 	/// <param name="item">The item to put in the new node.</param>
 	/// <returns>A new iterator at the next position.</returns>
 	inline binaryiterator_t<T> right(const T& item);
+	/// <summary>
+	/// Iterate to the parent node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
+	inline binaryiterator_t<T> parent();
 	
 	/// <summary>
 	/// Remove the node where the iterator is, and then iterate to the parent node.
@@ -273,7 +282,7 @@ template <typename T> struct binaryiterator_t
 	/// </summary>
 	inline bool has_right() const;
 	/// <summary>
-	/// Gets a value indicating whether or not the node is at the root of the tree.
+	/// Gets a value indicating whether or not the node is a root node.
 	/// </summary>
 	inline bool root() const;
 	/// <summary>
@@ -385,3 +394,184 @@ protected:
 };
 
 #include "binarytree.inl"
+
+template <typename T> struct quadnode_t;
+template <typename T> struct quaditerator_t;
+template <typename T> class quadtree_t;
+
+/// <summary>
+/// Contains methods and properties for a node in a quadratic tree.
+/// </summary>
+template <typename T> struct quadnode_t
+{
+	
+	inline quadnode_t() :
+		_tree(0),
+		_ring(-1),
+		_branch(-1) {}
+	/// <param name="tree">Pointer to the node's tree.</param>
+	/// <param name="ring">The ring that the node exists in.</param>
+	/// <param name="branch">The index inside of the ring for the node.</param>
+	/// <param name="data">The data that the node holds.</param>
+	inline quadnode_t(const quadtree_t<T>& tree, const int32_t ring, const int32_t branch, const T& data) :
+		_q0(tree._registry),
+		_q1(tree._registry),
+		_q2(tree._registry),
+		_q3(tree._registry),
+		_up(tree._registry),
+		_tree((quadtree_t<T>*)&tree),
+		_ring(ring),
+		_branch(branch),
+		_data(data) {}
+	inline ~quadnode_t() {}
+	
+	/// <summary>
+	/// Gets a values indicating whether the node is empty.
+	/// </summary>
+	inline bool empty() const;
+	
+	/// <summary>
+	/// Gets the index inside of the tree the node.
+	/// </summary>
+	inline size_t index() const;
+	
+	treereference_t<quadnode_t<T> > _q0;
+	treereference_t<quadnode_t<T> > _q1;
+	treereference_t<quadnode_t<T> > _q2;
+	treereference_t<quadnode_t<T> > _q3;
+	treereference_t<quadnode_t<T> > _up;
+	quadtree_t<T>* _tree;
+	int32_t _ring;
+	int32_t _branch;
+	T _data;
+	
+};
+
+/// <summary>
+/// Contains methods and properties for iterating through a quadratic tree.
+/// </summary>
+template <typename T> struct quaditerator_t
+{
+	
+	inline quaditerator_t() {}
+	/// <param name="node">The current node for the iterator.</param>
+	inline quaditerator_t(const treereference_t<quadnode_t<T> >& node) :
+		_node(node) {}
+	inline ~quaditerator_t() {}
+	
+	/// <summary>
+	/// Iterates to a child node at the specified number.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
+	inline quaditerator_t<T> child(int32_t num);
+	/// <summary>
+	/// Iterate to the parent node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
+	inline binaryiterator_t<T> parent();
+	
+	/// <summary>
+	/// Remove the node where the iterator is, and then iterate to the parent node.
+	/// </summary>
+	/// <returns>A new iterator at the next position.</returns>
+	inline quaditerator_t<T> remove();
+	
+	/// <summary>
+	/// Gets a value indicating whether or not the node is a root node.
+	/// </summary>
+	inline bool root() const;
+	/// <summary>
+	/// Gets a value indicating whether or not the node has any children.
+	/// </summary>
+	inline bool leaf() const;
+	
+	/// <summary>
+	/// Gets a value indicating whether or not the iterator has a node.
+	/// </summary>
+	inline bool empty() const;
+	
+	/// <summary>
+	/// Gets the held item for the current node.
+	/// </summary>
+	inline T& operator*() const;
+	/// <summary>
+	/// Determines whether this iterator is at the same location than the other iterator.
+	/// </summary>
+	/// <param name="other">An instance of binaryiterator_t.</param>
+	inline bool operator==(const quaditerator_t<T>& other) const;
+	/// <summary>
+	/// Determines whether this iterator is not at the same location than the other iterator.
+	/// </summary>
+	/// <param name="other">An instance of binaryiterator_t.</param>
+	inline bool operator!=(const quaditerator_t<T>& other) const;
+	
+	treereference_t<quadnode_t<T> > _node;
+	
+};
+
+/// <summary>
+/// Contains methods and properties for a quadratic tree.
+/// </summary>
+template <typename T> class quadtree_t
+{
+public:
+	
+	typedef quaditerator_t<T> iterator;
+	
+	typedef int32_t (*iterationfunc)(const treereference_t<quadnode_t<T> >& node, const T& item);
+	
+	inline quadtree_t() :
+		_registry(3, 4) {}
+	/// <param name="rings">The number of rings that make up the tree.</param>
+	inline quadtree_t(const uint32_t rings) :
+		_registry(rings, 4) {}
+	inline ~quadtree_t() { this->clear(); }
+	
+	/// <summary>
+	/// Sets the root of the tree with the given item.
+	/// </summary>
+	/// <param name="item">An item to put in the root node.</param>
+	/// <returns>An iterator pointing at the root of the tree.</returns>
+	inline iterator set_root(const T& item);
+	
+	/// <summary>
+	/// Searches the tree for the given item.
+	/// </summary>
+	/// <param name="item">An item to search for.</param>
+	/// <reutrns>A value indicating whether or not the given item was found in the tree.</returns>
+	inline iterator search(const T& item);
+	
+	/// <summary>
+	/// Gets an iterator pointing at the root of the tree.
+	/// </summary>
+	inline iterator root() { return iterator(treereference_t<quadnode_t<T> >(this->_registry, 0)); }
+	/// <summary>
+	/// Gets an invalid iterator that does not have a node.
+	/// </summary>
+	inline iterator end() const { return iterator(); }
+	
+	/// <summary>
+	/// Call given function for each node in the tree.
+	/// A zero value as a return value will exit.
+	/// </summary>
+	/// <param name="callback">Callback function to call on each node in the tree.</param>
+	inline void each(iterationfunc callback);
+	/// <summary>
+	/// Call to iterate through tree determined by the return value of the callback.
+	/// The return value must correspond to the next quadrant in the path (1, 2, 3, 4), and zero will exit.
+	/// </summary>
+	/// <param name="callback">Callback function to call on each node in the path.</param>
+	inline void path(iterationfunc callback);
+	
+	/// <summary>
+	/// Clears all nodes from the tree.
+	/// </summary>
+	inline void clear();
+	
+protected:
+	
+	treealloc_t<quadnode_t<T> > _registry;
+	
+};
+
+#include "quadtree.inl"
