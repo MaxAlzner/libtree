@@ -7,7 +7,7 @@ template <typename T> inline bool binarynode_t<T>::empty() const
 
 template <typename T> inline size_t binarynode_t<T>::index() const
 {
-	return (size_t)((((uint32_t)pow(2.0f, (float)this->_ring)) - 1) + this->_branch);
+	return (tree_ring_length(this->_ring, 2) - 1) + (size_t)this->_branch;
 }
 
 template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::left() const
