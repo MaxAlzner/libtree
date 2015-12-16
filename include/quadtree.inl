@@ -7,5 +7,5 @@ template <typename T> inline bool quadnode_t<T>::empty() const
 
 template <typename T> inline size_t quadnode_t<T>::index() const
 {
-	return (tree_ring_length(this->_ring, 4) - 1) + (size_t)this->_branch;
+	return tree_index(this->_ring, this->_branch, 4);
 }
