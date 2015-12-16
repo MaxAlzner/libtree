@@ -3,11 +3,15 @@
 
 #include <stdio.h>
 
+int callback_binary_print(const treereference_t<binarynode_t<int> >& node, const int& item)
+{
+	printf("    node (%d, %d) = %d\n", node->_ring, node->_branch, item);
+	return item / abs(item);
+}
+
 int main(int argc, char** argv)
 {
 	printf("  starting\n");
-	binarynode_t<int>* nodes = 0;
-	int32_t num = 0;
 	
 	printf("  creating tree\n");
 	binarytree_t<int> bt0;
@@ -16,22 +20,22 @@ int main(int argc, char** argv)
 	
 	printf("  setting node\n");
 	i = i.left(8);
-	
-	printf("  setting node\n");
-	i = i.right(4);
+	i.left(2).left(5);
+	i.right(4);
 	
 	printf("  setting node\n");
 	i = bt0.root().right(7);
 	i.right(3).right(9);
 	
 	printf("\n");
-	nodes = (binarynode_t<int>*)calloc(8, sizeof(binarynode_t<int>));
-	num = bt0.nodes(nodes, 8);
-	for (int32_t i = 0; i < num; i++)
-	{
-		binarynode_t<int> node = nodes[i];
-		printf("    node (%d, %d) = %d\n", node._ring, node._branch, node._data);
-	}
+	
+	printf("  printing tree\n");
+	bt0.each(&callback_binary_print);
+	
+	printf("\n");
+	
+	printf("  printing tree by path\n");
+	bt0.path(&callback_binary_print);
 	
 	printf("\n");
 	
@@ -39,13 +43,9 @@ int main(int argc, char** argv)
 	i.remove();
 	
 	printf("\n");
-	nodes = (binarynode_t<int>*)calloc(64, sizeof(binarynode_t<int>));
-	num = bt0.nodes(nodes, 64);
-	for (int32_t i = 0; i < num; i++)
-	{
-		binarynode_t<int> node = nodes[i];
-		printf("    node (%d, %d) = %d\n", node._ring, node._branch, node._data);
-	}
+	
+	printf("  printing tree\n");
+	bt0.each(&callback_binary_print);
 	
 	printf("\n");
 	
@@ -53,13 +53,9 @@ int main(int argc, char** argv)
 	bt0.root().remove();
 	
 	printf("\n");
-	nodes = (binarynode_t<int>*)calloc(8, sizeof(binarynode_t<int>));
-	num = bt0.nodes(nodes, 8);
-	for (int32_t i = 0; i < num; i++)
-	{
-		binarynode_t<int> node = nodes[i];
-		printf("    node (%d, %d) = %d\n", node._ring, node._branch, node._data);
-	}
+	
+	printf("  printing tree\n");
+	bt0.each(&callback_binary_print);
 	
 	printf("\n");
 	

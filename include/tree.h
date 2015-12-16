@@ -405,6 +405,8 @@ public:
 	
 	typedef binaryiterator_t<T> iterator;
 	
+	typedef int32_t (*iterationfunc)(const treereference_t<binarynode_t<T> >& node, const T& item);
+	
 	friend struct binarynode_t<T>;
 	friend struct binaryiterator_t<T>;
 	
@@ -418,6 +420,7 @@ public:
 	/// <summary>
 	/// Sets the root of the tree with the given item.
 	/// </summary>
+	/// <param name="item">An item to put in the root node.</param>
 	/// <returns>An iterator pointing at the root of the tree.</returns>
 	inline iterator set_root(const T& item);
 	
@@ -431,19 +434,27 @@ public:
 	inline iterator end() const { return iterator(); }
 	
 	/// <summary>
+	/// Call given function for each node in the tree.
+	/// A zero value as a return value will exit.
+	/// </summary>
+	/// <param name="callback">Callback function to call on each node in the tree.</param>
+	inline void each(iterationfunc callback);
+	/// <summary>
+	/// Call to iterate through tree determined by the return value of the callback.
+	/// A positive value will go left, a negative value will go right, and zero will exit.
+	/// </summary>
+	/// <param name="callback">Callback function to call on each node in the path.</param>
+	inline void path(iterationfunc callback);
+	
+	/// <summary>
 	/// Clears all nodes from the tree.
 	/// </summary>
 	inline void clear();
 	
-	/// <summary>
-	/// Fills a buffer with all nodes in the tree.
-	/// </summary>
-	/// <param name="buffer">A buffer of nodes.</param>
-	/// <param name="size">The size of the buffer.</param>
-	/// <returns>The number of items put in the buffer.</returns>
-	inline size_t nodes(binarynode_t<T>* buffer, const size_t size);
-	
 protected:
+	
+	static int32_t execute_each(const treereference_t<binarynode_t<T> >& node, iterationfunc callback);
+	static int32_t execute_path(const treereference_t<binarynode_t<T> >& node, iterationfunc callback);
 	
 	treealloc_t<binarynode_t<T> > _registry;
 	
@@ -451,7 +462,7 @@ protected:
 
 template <typename T> inline bool binarynode_t<T>::empty() const
 {
-	return this->_data == 0 || this->_tree == 0 || this->_ring < 0 || this->_branch < 0 || this->_up.empty();
+	return this->_data == 0 || this->_tree == 0 || this->_ring < 0 || this->_branch < 0;
 }
 
 template <typename T> inline size_t binarynode_t<T>::index() const
@@ -580,29 +591,56 @@ template <typename T> inline binaryiterator_t<T> binarytree_t<T>::set_root(const
 	return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0));
 }
 
+template <typename T> inline void binarytree_t<T>::each(iterationfunc callback)
+{
+	execute_each(treereference_t<binarynode_t<T> >(this->_registry, 0), callback);
+}
+template <typename T> inline void binarytree_t<T>::path(iterationfunc callback)
+{
+	execute_path(treereference_t<binarynode_t<T> >(this->_registry, 0), callback);
+}
+
 template <typename T> inline void binarytree_t<T>::clear()
 {
 	this->_registry.clear();
 }
 
-template <typename T> inline size_t binarytree_t<T>::nodes(binarynode_t<T>* buffer, const size_t size)
+template <typename T> int32_t binarytree_t<T>::execute_each(const treereference_t<binarynode_t<T> >& node, iterationfunc callback)
 {
-	binarynode_t<T>* read = buffer;
-	size_t count = 0;
-	for (size_t i = 0; i < this->_registry.capacity(); i++)
+	int32_t result = 1;
+	if (node != 0 && !node.empty() && !node->empty() && callback != 0)
 	{
-		const binarynode_t<T>* node = &(this->_registry[i]);
-		if (!node->empty())
+		result = callback(node, node->_data);
+		if (result != 0)
 		{
-			*read = *node;
-			read++;
-			count++;
-			if (count >= size)
+			result = execute_each(node->_left, callback);
+			if (result != 0)
 			{
-				break;
+				result = execute_each(node->_right, callback);
 			}
 		}
 	}
 	
-	return count;
+	return result;
+}
+template <typename T> int32_t binarytree_t<T>::execute_path(const treereference_t<binarynode_t<T> >& node, iterationfunc callback)
+{
+	int32_t result = 0;
+	if (node != 0 && !node.empty() && !node->empty() && callback != 0)
+	{
+		result = callback(node, node->_data);
+		if (result != 0)
+		{
+			if (result > 0)
+			{
+				return execute_path(node->_left, callback);
+			}
+			else
+			{
+				return execute_path(node->_right, callback);
+			}
+		}
+	}
+	
+	return result;
 }
