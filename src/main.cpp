@@ -15,6 +15,7 @@ int main(int argc, char** argv)
 	
 	printf("  creating tree\n");
 	binarytree_t<int> bt0;
+	
 	printf("  setting root\n");
 	binarytree_t<int>::iterator i = bt0.set_root(2);
 	
@@ -32,7 +33,7 @@ int main(int argc, char** argv)
 	printf("    found 8? %s\n", bt0.search(8).empty() ? "false" : "true");
 	printf("    found -10? %s\n", bt0.search(-10).empty() ? "false" : "true");
 	printf("    found 2? %s\n", bt0.search(2).empty() ? "false" : "true");
-	printf("    found 9? %s\n", bt0.search(9).empty() ? "false" : "true");
+	printf("    found 3? %s\n", bt0.search(3).empty() ? "false" : "true");
 	
 	printf("\n");
 	
@@ -46,8 +47,15 @@ int main(int argc, char** argv)
 	
 	printf("\n");
 	
-	printf("  removing node (1, 0)\n");
-	i.remove();
+	printf("  removing node (0, 1)\n");
+	bt0.root().left().remove();
+	
+	printf("\n");
+	
+	printf("    found 8? %s\n", bt0.search(8).empty() ? "false" : "true");
+	printf("    found -10? %s\n", bt0.search(-10).empty() ? "false" : "true");
+	printf("    found 2? %s\n", bt0.search(2).empty() ? "false" : "true");
+	printf("    found 3? %s\n", bt0.search(3).empty() ? "false" : "true");
 	
 	printf("\n");
 	
@@ -69,7 +77,7 @@ int main(int argc, char** argv)
 	printf("    found 8? %s\n", bt0.search(8).empty() ? "false" : "true");
 	printf("    found -10? %s\n", bt0.search(-10).empty() ? "false" : "true");
 	printf("    found 2? %s\n", bt0.search(2).empty() ? "false" : "true");
-	printf("    found 9? %s\n", bt0.search(9).empty() ? "false" : "true");
+	printf("    found 3? %s\n", bt0.search(3).empty() ? "false" : "true");
 	
 	printf("\n");
 	

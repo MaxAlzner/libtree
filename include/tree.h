@@ -13,16 +13,16 @@
 #endif
 
 /// <summary>
-/// Gets the tree ring for the given index and stride.
+/// Calculates the tree ring for the given index and stride.
 /// </summary>
 /// <param name="index">The index inside of the tree.</param>
 /// <param name="stride">The number of child nodes for each parent.</param>
 /// <returns>The ring's index.</returns>
-static uint32_t tree_ring_by_index(const uint32_t index, const uint32_t stride)
+static uint32_t tree_ring_by_index(const size_t index, const uint32_t stride)
 {
 	float e = 0.0f;
-	uint32_t last = 0;
-	while (index >= (last += (uint32_t)pow((float)stride, e)))
+	size_t last = 0;
+	while (index >= (last += (size_t)pow((float)stride, e)))
 	{
 		e += 1.0f;
 	}
@@ -31,10 +31,30 @@ static uint32_t tree_ring_by_index(const uint32_t index, const uint32_t stride)
 }
 
 /// <summary>
-/// Gets the size needed for the given number of rings and specified stride.
+/// Calculates the tree ring branch for the given index and stride.
 /// </summary>
-/// <param name="rings The number of rings that make up the tree.</param>
-/// <param name="stride The number of child nodes for each parent.</param>
+/// <param name="index">The index inside of the tree.</param>
+/// <param name="stride">The number of child nodes for each parent.</param>
+/// <returns>The branch's index.</returns>
+static uint32_t tree_branch_by_index(const size_t index, const uint32_t stride)
+{
+	uint32_t i = index + 1;
+	float e = 0.0f;
+	size_t last = 0;
+	while (i > (last = (size_t)pow((float)stride, e)))
+	{
+		i -= last;
+		e += 1.0f;
+	}
+	
+	return i - 1;
+}
+
+/// <summary>
+/// Calculates the size needed for the given number of rings and specified stride.
+/// </summary>
+/// <param name="rings">The number of rings that make up the tree.</param>
+/// <param name="stride">The number of child nodes for each parent.</param>
 /// <returns>The number of elements that the tree can potentially hold.</returns>
 static size_t tree_size(const uint32_t rings, const uint32_t stride)
 {
@@ -45,6 +65,29 @@ static size_t tree_size(const uint32_t rings, const uint32_t stride)
 	}
 	
 	return size;
+}
+
+/// <summary>
+/// Calculates the size of a ring with the specified stride.
+/// </summary>
+/// <param name="ring">The index of a tree ring.</param>
+/// <param name="stride">The number of child nodes for each parent.</param>
+/// <returns>The number of elements that a tree ring can potentially hold.</returns>
+static size_t tree_ring_length(const uint32_t ring, const uint32_t stride)
+{
+	return (size_t)pow((float)stride, (float)ring);
+}
+
+/// <summary>
+/// Calculates a tree index.
+/// </summary>
+/// <param name="ring">The ring that the node exists in.</param>
+/// <param name="branch">The index inside of the ring for the node.</param>
+/// <param name="stride">The number of child nodes for each parent.</param>
+/// <returns>An index that could exists in the tree.</returns>
+static size_t tree_index(const uint32_t ring, const uint32_t branch, const uint32_t stride)
+{
+	return (tree_ring_length(ring, stride) - 1) + (size_t)branch;
 }
 
 /// <summary>
@@ -89,6 +132,12 @@ public:
 	/// Sets the entire tree buffer to null.
 	/// </summary>
 	inline void zero();
+	
+	/// <summary>
+	/// Remove the entire node chain starting at the given root.
+	/// </summary>
+	/// <param name="index">The index of the root node to delete.</param>
+	inline void remove(const size_t index);
 	
 	/// <summary>
 	/// Gets the total capacity of the tree buffer.
@@ -209,6 +258,18 @@ template <typename T> inline void treealloc_t<T>::clear()
 template <typename T> inline void treealloc_t<T>::zero()
 {
 	memset(this->_buffer, 0, this->_bytes);
+}
+
+template <typename T> inline void treealloc_t<T>::remove(const size_t index)
+{
+	uint32_t ring = tree_ring_by_index(index, this->_stride);
+	size_t root = index % this->capacity();
+	uint32_t branch = tree_branch_by_index(root, this->_stride);
+	for (uint32_t i = ring; i < this->_rings; i++)
+	{
+		memset(this->_buffer + tree_index(i, branch, this->_stride), 0, sizeof(T) * tree_ring_length(i - ring, this->_stride));
+		branch = branch * this->_stride;
+	}
 }
 
 template <typename T> inline T& treealloc_t<T>::operator[](const size_t index)
@@ -528,7 +589,8 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::remove()
 		}
 		
 		this->_node = prev->_up;
-		*prev = binarynode_t<T>();
+		// *prev = binarynode_t<T>();
+		prev->_tree->_registry.remove(prev->index());
 		if (this->_node != 0)
 		{
 			return binaryiterator_t<T>(this->_node);
