@@ -29,6 +29,13 @@ int main(int argc, char** argv)
 	
 	printf("\n");
 	
+	printf("    found 8? %s\n", bt0.search(8).empty() ? "false" : "true");
+	printf("    found -10? %s\n", bt0.search(-10).empty() ? "false" : "true");
+	printf("    found 2? %s\n", bt0.search(2).empty() ? "false" : "true");
+	printf("    found 9? %s\n", bt0.search(9).empty() ? "false" : "true");
+	
+	printf("\n");
+	
 	printf("  printing tree\n");
 	bt0.each(&callback_binary_print);
 	
@@ -56,6 +63,13 @@ int main(int argc, char** argv)
 	
 	printf("  printing tree\n");
 	bt0.each(&callback_binary_print);
+	
+	printf("\n");
+	
+	printf("    found 8? %s\n", bt0.search(8).empty() ? "false" : "true");
+	printf("    found -10? %s\n", bt0.search(-10).empty() ? "false" : "true");
+	printf("    found 2? %s\n", bt0.search(2).empty() ? "false" : "true");
+	printf("    found 9? %s\n", bt0.search(9).empty() ? "false" : "true");
 	
 	printf("\n");
 	

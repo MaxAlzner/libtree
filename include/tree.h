@@ -425,6 +425,13 @@ public:
 	inline iterator set_root(const T& item);
 	
 	/// <summary>
+	/// Searches the tree for the given item.
+	/// </summary>
+	/// <param name="item">An item to search for.</param>
+	/// <reutrns>A value indicating whether or not the given item was found in the tree.</returns>
+	inline iterator search(const T& item);
+	
+	/// <summary>
 	/// Gets an iterator pointing at the root of the tree.
 	/// </summary>
 	inline iterator root() { return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0)); }
@@ -589,6 +596,20 @@ template <typename T> inline binaryiterator_t<T> binarytree_t<T>::set_root(const
 	this->_registry.zero();
 	this->_registry[0] = binarynode_t<T>(*this, 0, 0, item);
 	return iterator(treereference_t<binarynode_t<T> >(this->_registry, 0));
+}
+
+template <typename T> inline binaryiterator_t<T> binarytree_t<T>::search(const T& item)
+{
+	for (size_t i = 0; i < this->_registry.capacity(); i++)
+	{
+		treereference_t<binarynode_t<T> > node(this->_registry, i);
+		if (!node.empty() && !node->empty() && memcmp(&(node->_data), &item, sizeof(T)) == 0)
+		{
+			return binaryiterator_t<T>(node);
+		}
+	}
+	
+	return binaryiterator_t<T>();
 }
 
 template <typename T> inline void binarytree_t<T>::each(iterationfunc callback)
