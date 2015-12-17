@@ -1,14 +1,9 @@
 
-CC = g++
+CC = g++ -g
 
-bin/test: obj/main.o
+bin/test: clean src/main.cpp
 	@mkdir -p bin
-	$(CC) -Wall -Werror -o $@ obj/main.o
-
-.PHONY: obj/main.o
-obj/main.o: src/main.cpp
-	@mkdir -p obj
-	$(CC) -c -o $@ $< -Wall -Werror -fpic
+	$(CC) -Wall -Werror -o $@ src/main.cpp
 
 .PHONY: install
 install:
@@ -17,4 +12,3 @@ install:
 .PHONY: clean
 clean:
 	@rm -rf bin
-	@rm -rf obj

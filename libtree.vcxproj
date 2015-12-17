@@ -114,6 +114,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\tree.h" />
+    <ClInclude Include="include\treealloc.inl" />
+    <ClInclude Include="include\binarytree.inl" />
+    <ClInclude Include="include\quadtree.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
