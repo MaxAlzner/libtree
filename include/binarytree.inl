@@ -2,7 +2,7 @@
 
 template <typename T> inline bool binarynode_t<T>::empty() const
 {
-	return this->_data == 0 || this->_tree == 0 || this->_ring < 0 || this->_branch < 0;
+	return this->_tree == 0 || this->_ring < 0 || this->_branch < 0;
 }
 
 template <typename T> inline size_t binarynode_t<T>::index() const
@@ -20,7 +20,7 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::left(const
 	{
 		int32_t ring = this->_node->_ring + 1;
 		int32_t branch = (this->_node->_branch * 2) + 1;
-		int32_t index = (((int32_t)pow(2.0f, (float)ring)) - 1) + branch;
+		int32_t index = tree_index(ring, branch, 2);
 		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(*(this->_node->_tree), ring, branch, item));
 		node._up = this->_node;
 		this->_node->_left = treereference_t<binarynode_t<T> >(this->_node->_tree->_registry, index);
@@ -39,7 +39,7 @@ template <typename T> inline binaryiterator_t<T> binaryiterator_t<T>::right(cons
 	{
 		int32_t ring = this->_node->_ring + 1;
 		int32_t branch = this->_node->_branch * 2;
-		int32_t index = (((int32_t)pow(2.0f, (float)ring)) - 1) + branch;
+		int32_t index = tree_index(ring, branch, 2);
 		binarynode_t<T>& node = (this->_node->_tree->_registry[index] = binarynode_t<T>(*(this->_node->_tree), ring, branch, item));
 		node._up = this->_node;
 		this->_node->_right = treereference_t<binarynode_t<T> >(this->_node->_tree->_registry, index);
