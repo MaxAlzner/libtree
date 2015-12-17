@@ -12,7 +12,7 @@ obj/main.o: src/main.cpp
 
 .PHONY: install
 install:
-	@ln -f include/tree.h /usr/local/include
+	@ln -f include/* /usr/local/include
 
 .PHONY: clean
 clean:
