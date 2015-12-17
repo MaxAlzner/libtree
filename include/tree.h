@@ -462,13 +462,14 @@ template <typename T> struct quaditerator_t
 	/// <summary>
 	/// Iterates to a child node at the specified number.
 	/// </summary>
+	/// <param name="quadrant">The number of the quadrant to iterate to.</param>
 	/// <returns>A new iterator at the next position.</returns>
-	inline quaditerator_t<T> child(int32_t num);
+	inline quaditerator_t<T> child(const int32_t quadrant);
 	/// <summary>
 	/// Iterate to the parent node.
 	/// </summary>
 	/// <returns>A new iterator at the next position.</returns>
-	inline binaryiterator_t<T> parent();
+	inline quaditerator_t<T> parent();
 	
 	/// <summary>
 	/// Remove the node where the iterator is, and then iterate to the parent node.
@@ -495,6 +496,11 @@ template <typename T> struct quaditerator_t
 	/// </summary>
 	inline T& operator*() const;
 	/// <summary>
+	/// Gets an iterator to a child quadrant.
+	/// </summary>
+	/// <param name="quadrant">The number of the quadrant to iterate to.</param>
+	inline quaditerator_t<T> operator[](const int32_t quadrant);
+	/// <summary>
 	/// Determines whether this iterator is at the same location than the other iterator.
 	/// </summary>
 	/// <param name="other">An instance of binaryiterator_t.</param>
@@ -520,6 +526,9 @@ public:
 	
 	typedef int32_t (*iterationfunc)(const treereference_t<quadnode_t<T> >& node, const T& item);
 	
+	friend struct quadnode_t<T>;
+	friend struct quaditerator_t<T>;
+	
 	inline quadtree_t() :
 		_registry(3, 4) {}
 	/// <param name="rings">The number of rings that make up the tree.</param>
@@ -544,11 +553,11 @@ public:
 	/// <summary>
 	/// Gets an iterator pointing at the root of the tree.
 	/// </summary>
-	inline iterator root() { return iterator(treereference_t<quadnode_t<T> >(this->_registry, 0)); }
+	inline iterator root();
 	/// <summary>
 	/// Gets an invalid iterator that does not have a node.
 	/// </summary>
-	inline iterator end() const { return iterator(); }
+	inline iterator end() const;
 	
 	/// <summary>
 	/// Call given function for each node in the tree.
@@ -569,6 +578,9 @@ public:
 	inline void clear();
 	
 protected:
+	
+	static int32_t execute_each(const treereference_t<quadnode_t<T> >& node, iterationfunc callback);
+	static int32_t execute_path(const treereference_t<quadnode_t<T> >& node, iterationfunc callback);
 	
 	treealloc_t<quadnode_t<T> > _registry;
 	

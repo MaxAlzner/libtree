@@ -3,15 +3,23 @@
 
 #include <stdio.h>
 
+#include <string>
+
 int callback_binary_print(const treereference_t<binarynode_t<int> >& node, const int& item)
 {
 	printf("    node (%d, %d) = %d\n", node->_ring, node->_branch, item);
 	return item / abs(item);
 }
 
-int main(int argc, char** argv)
+int callback_quad_print(const treereference_t<quadnode_t<std::string> >& node, const std::string& item)
 {
-	printf("  starting\n");
+	printf("    node (%d, %d) = %s\n", node->_ring, node->_branch, item.c_str());
+	return 1;
+}
+
+void binary_test()
+{
+	printf("  starting binary tree\n");
 	
 	printf("  creating tree\n");
 	binarytree_t<int> bt0;
@@ -82,6 +90,40 @@ int main(int argc, char** argv)
 	printf("\n");
 	
 	bt0.clear();
+}
+
+void quad_test()
+{
+	printf("  starting binary tree\n");
+	
+	printf("  creating tree\n");
+	quadtree_t<std::string> bt0;
+	
+	printf("  setting root\n");
+	quadtree_t<std::string>::iterator i = bt0.set_root("I am a root");
+	
+	printf("  printing tree\n");
+	bt0.each(&callback_quad_print);
+}
+
+int main(int argc, char** argv)
+{
+	for (int i = 0; i < argc; i++)
+	{
+		std::string option = argv[i];
+		if (option.size() > 1 && option[0] == '-')
+		{
+			option = option.substr(1);
+			if (option == "binary")
+			{
+				binary_test();
+			}
+			else if (option == "quad")
+			{
+				quad_test();
+			}
+		}
+	}
 	
 	return 0;
 }
